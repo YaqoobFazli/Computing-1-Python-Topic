@@ -1,0 +1,93 @@
+#(=> Strype:1:std
+#(=> Section:Imports
+from random import randint 
+from strype.graphics import * 
+from strype.sound import * 
+#(=> Section:Definitions
+playagain  = 0 
+playerscore  = 0 
+computerwins  = 0 
+explosion  = load_sound("explosion.mp3") 
+splash  = load_sound("splash.mp3") 
+gameover  = load_sound("gameover.mp3") 
+def draw_board (board ) :
+    picture  = Image(800,600) 
+    for r  in range(6)  :
+        for c  in range(6)  :
+            if board[r][c] == "X"  :
+                picture.set_fill("white") 
+            elif board[r][c] == "S"  :
+                picture.set_fill("red") 
+            elif board[r][c] == "*"  :
+                picture.set_fill("grey") 
+            else :
+                picture.set_fill("blue") 
+            picture.draw_rect(c * 134,r * 100,134,100) 
+    set_background(picture) 
+def print_board (board ) :
+    for row  in board  :
+        print(" ".join(row)) 
+    draw_board(board) 
+def random_row (board ) :
+    return randint(0,len(board) - 1) 
+def random_col (board ) :
+    return randint(0,len(board) - 1) 
+def find_ship (board,ship_row,ship_col ) :
+    board[ship_row][ship_col]  = "*" 
+    print_board(board) 
+def battleship ( ) :
+    global playerscore,computerwins 
+    board  = [] 
+    for i  in range(6)  :
+        board.append(["O"] * 6) 
+    
+    print("Battleships!") 
+    print_board(board) 
+    
+    ship_row  = random_row(board) 
+    ship_col  = random_col(board) 
+    
+    for x  in range(4)  :
+        print("Turn",x + 1) 
+        guess  = input("Enter row,column (1-6), for example 2,5: ") 
+        guess_row,guess_col  = guess.split(",") 
+        guess_row  = int(guess_row) - 1 
+        guess_col  = int(guess_col) - 1 
+        
+        if guess_row == ship_row and guess_col == ship_col  :
+            playerscore  = playerscore + 1 
+            print("You sunk my ship!") 
+            explosion.play() 
+            board[guess_row][guess_col]  = "S" 
+            print_board(board) 
+            break
+        else :
+            if guess_row not in range(6) or guess_col not in range(6)  :
+                print("Invalid coordinates...") 
+            elif board[guess_row][guess_col] == "X"  :
+                print("Previously guessed this coordinate...") 
+            else :
+                print("You missed my battleship") 
+                splash.play() 
+                board[guess_row][guess_col]  = "X" 
+            print_board(board) 
+            if x == 3  :
+                print("Game Over!") 
+                gameover.play() 
+                computerwins  = computerwins + 1 
+                print("The ship was at Row:",ship_row + 1,"and Column",ship_col + 1) 
+                find_ship(board,ship_row,ship_col) 
+#(=> Section:Main
+while playagain == 0  :
+    battleship() 
+    playagainquestion  = input("Do you want to play again (Y/N): ") 
+    while playagainquestion not in ["Y","y","N","n"]  :
+        print("Invalid Input Detected") 
+        playagainquestion  = input("Do you want to play again (Y/N): ") 
+    if playagainquestion == "Y" or playagainquestion == "y"  :
+        playagain  = 0 
+    elif playagainquestion == "N" or playagainquestion == "n"  :
+        playagain  = 1 
+        print("Player wins:",playerscore) 
+        print("Computer wins:",computerwins) 
+#(=> Section:End
